@@ -1,0 +1,9 @@
+.svn*
+*.DS_Store
+*.nt
+*.csv
+*.txt
+/src/main/resources/**/*config.xml
+target
+nbactions.xml
+/nbproject/

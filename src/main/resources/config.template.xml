@@ -2,6 +2,10 @@
 <merge>
 	<partitions></partitions>
 	<fusionMode>l_mode</fusionMode>
+	<datasetA></datasetA>
+	<datasetB></datasetB>
+	<unlinkedA></unlinkedA>
+	<unlinkedB></unlinkedB>
 	<inputDir></inputDir>
 	<outputDir></outputDir>
 </merge>

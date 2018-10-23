@@ -53,6 +53,14 @@ public class ConfigParser {
 
             configuration.setPartitions(partitionsNumber);
 
+            NodeList ua = doc.getElementsByTagName(Constants.XML.UNLINKED_A);
+            String unlinkedA = ua.item(0).getTextContent();
+            configuration.setUnlinkedA(unlinkedA);
+            
+            NodeList ub = doc.getElementsByTagName(Constants.XML.UNLINKED_B);
+            String unlinkedB = ub.item(0).getTextContent();
+            configuration.setUnlinkedB(unlinkedB);
+
             NodeList in = doc.getElementsByTagName(Constants.XML.INPUT_DIR);
             String inputDir = in.item(0).getTextContent();
             

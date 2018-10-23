@@ -14,13 +14,15 @@ public class Configuration {
     private static Configuration configuration;
     private int partitions;
     private EnumFusionMode fusionMode;
+    private String unlinkedA;
+    private String unlinkedB;
     private String inputDir;
     private String outputDir;
 
     @Override
     public String toString() {
-        return "Configuration{" + "partitions=" + partitions + ", fusionMode=" + fusionMode 
-                + ", inputDir=" + inputDir + ", outputDir=" + outputDir + '}';
+        return "\nConfiguration{" + "\n\tpartitions=" + partitions + "\n\tfusionMode=" + fusionMode 
+                + "\n\tinputDir=" + inputDir + "\n\toutputDir=" + outputDir + "\n}";
     }
 
     private Configuration() {
@@ -65,5 +67,21 @@ public class Configuration {
 
     public void setPartitions(int partitions) {
         this.partitions = partitions;
+    }
+
+    public String getUnlinkedA() {
+        return unlinkedA;
+    }
+
+    public void setUnlinkedA(String unlinkedA) {
+        this.unlinkedA = unlinkedA;
+    }
+
+    public String getUnlinkedB() {
+        return unlinkedB;
+    }
+
+    public void setUnlinkedB(String unlinkedB) {
+        this.unlinkedB = unlinkedB;
     }
 }

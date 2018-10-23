@@ -32,11 +32,6 @@ public class Constants {
     public static final String AMBIGUOUS = "ambiguous.nt";
     
     /**
-     * Links filename.
-     */
-    public static final String LINKS = "links.nt";
-    
-    /**
      * Statistics filename.
      */
     public static final String STATS = "stats.json";
@@ -45,6 +40,16 @@ public class Constants {
      * Fusion properties filename.
      */
     public static final String FUSION_PROPERTIES = "fusion.properties";
+    
+    /**
+     * Property used in the "fusion.properties" file.
+     */
+    public static final String FUSED_PROPERTY = "fused";
+    
+    /**
+     * Property used in the "fusion.properties" file.
+     */
+    public static final String REJECTED_PROPERTY = "rejected";
 
     /**
      * Class for constants of the XML syntax.
@@ -75,6 +80,16 @@ public class Constants {
          * Name for number of partitions tag in XML.
          */
         public static final String PARTITIONS = "partitions";
+
+        /**
+         * Name for the input file that contains the unlinked entities from dataset A.
+         */
+        public static final String UNLINKED_A = "unlinkedA";
+        
+        /**
+         * Name for the input file that contains the unlinked entities from dataset B.
+         */
+        public static final String UNLINKED_B = "unlinkedB";
 
         /**
          * Name for input directory tag in XML.

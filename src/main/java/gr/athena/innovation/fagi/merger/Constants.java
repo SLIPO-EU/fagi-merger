@@ -90,6 +90,16 @@ public class Constants {
          * Name for the input file that contains the unlinked entities from dataset B.
          */
         public static final String UNLINKED_B = "unlinkedB";
+        
+        /**
+         * Name for the source dataset A.
+         */
+        public static final String DATASET_A = "datasetA";
+
+        /**
+         * Name for the source dataset B.
+         */
+        public static final String DATASET_B = "datasetB";
 
         /**
          * Name for input directory tag in XML.

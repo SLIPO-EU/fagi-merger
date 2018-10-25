@@ -15,7 +15,9 @@ public class Configuration {
     private int partitions;
     private EnumFusionMode fusionMode;
     private String unlinkedA;
+    private String datasetA;
     private String unlinkedB;
+    private String datasetB;
     private String inputDir;
     private String outputDir;
 
@@ -83,5 +85,21 @@ public class Configuration {
 
     public void setUnlinkedB(String unlinkedB) {
         this.unlinkedB = unlinkedB;
+    }
+
+    public String getDatasetA() {
+        return datasetA;
+    }
+
+    public void setDatasetA(String datasetA) {
+        this.datasetA = datasetA;
+    }
+
+    public String getDatasetB() {
+        return datasetB;
+    }
+
+    public void setDatasetB(String datasetB) {
+        this.datasetB = datasetB;
     }
 }

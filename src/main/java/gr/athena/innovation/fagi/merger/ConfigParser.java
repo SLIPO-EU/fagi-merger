@@ -60,6 +60,14 @@ public class ConfigParser {
             NodeList ub = doc.getElementsByTagName(Constants.XML.UNLINKED_B);
             String unlinkedB = ub.item(0).getTextContent();
             configuration.setUnlinkedB(unlinkedB);
+            
+            NodeList da = doc.getElementsByTagName(Constants.XML.DATASET_A);
+            String datasetA = da.item(0).getTextContent();
+            configuration.setDatasetA(datasetA);
+            
+            NodeList db = doc.getElementsByTagName(Constants.XML.DATASET_B);
+            String datasetB = db.item(0).getTextContent();
+            configuration.setDatasetB(datasetB);
 
             NodeList in = doc.getElementsByTagName(Constants.XML.INPUT_DIR);
             String inputDir = in.item(0).getTextContent();

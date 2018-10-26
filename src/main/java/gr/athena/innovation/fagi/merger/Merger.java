@@ -5,19 +5,18 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * Merging of output that come from multiple fagi instances.
- * 
+ *
  * @author nkarag
  */
 public class Merger {
 
     private static final Logger LOG = LogManager.getRootLogger();
-    
-    
+
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        
+
         String config = null;
 
         String arg;
@@ -52,5 +51,5 @@ public class Merger {
             System.exit(-1);
         }
     }
-    
+
 }

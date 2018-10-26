@@ -37,6 +37,16 @@ public class Constants {
     public static final String STATS = "stats.json";
     
     /**
+     * Temporary file extension.
+     */
+    public static final String TEMP = ".temp";
+    
+    /**
+     * Initial value for property.
+     */
+    public static final String ZERO_VALUE = "0";
+    
+    /**
      * Fusion properties filename.
      */
     public static final String FUSION_PROPERTIES = "fusion.properties";
@@ -111,5 +121,88 @@ public class Constants {
          */
         public static final String OUTPUT_DIR = "outputDir";
         
+    }
+    
+    /**
+     * Class of constants for statistics.
+     */
+    public static class Stats {
+
+        /**
+         * Value A field.
+         */
+        public static final String VALUE_A = "valueA";
+
+        /**
+         * Value B field.
+         */
+        public static final String VALUE_B = "valueB";
+        
+        /**
+         * Value total field.
+         */
+        public static final String VALUE_TOTAL = "valueTotal";
+        
+        /**
+         * Value both field.
+         */
+        public static final String VALUE_BOTH = "both";
+        
+        /**
+         * Type field.
+         */
+        public static final String TYPE = "type";
+        
+        /**
+         * Undefined value.
+         */
+        public static final String UNDEFINED = "UNDEFINED";
+        
+        /**
+         * Class containing keys for statistics.
+         */
+        public static class Keys {
+            
+            /**
+             * Key for percent statistics.
+             */
+            public static final String PERCENT = "Percent";
+            
+            /**
+             * Key for full matching value statistics.
+             */
+            public static final String FULL = "full";
+            
+            /**
+             * Longer value key.
+             */
+            public static final String LONGER = "longer";
+
+            /**
+             * Linked POIs key.
+             */
+            public static final String LINKED_POIS = "linkedPois";
+            
+            /**
+             * Total empty properties key.
+             */
+            public static final String TOTAL_EMPTY_PROPERTIES = "totalEmptyProperties";
+            
+            /**
+             * Total non-empty properties key.
+             */
+            public static final String TOTAL_NON_EMPTY_PROPERTIES = "totalNonEmptyProperties";
+
+            /**
+             * Linked vs total POIs key.
+             */
+            public static final String LINKED_VS_TOTAL = "linkedVsTotal";
+            
+            /**
+             * Linked triples key.
+             */
+            public static final String LINKED_TRIPLES = "linkedTriples";
+
+        }
     }
 }

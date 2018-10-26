@@ -25,7 +25,6 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-
 /**
  *
  * @author nkarag
@@ -34,7 +33,7 @@ public class MergerInstance {
 
     private static final org.apache.logging.log4j.Logger LOG = LogManager.getLogger(MergerInstance.class);
 
-    public void run(String configPath) throws WrongInputException, MergeOperationException, IOException, ParseException{
+    public void run(String configPath) throws WrongInputException, MergeOperationException, IOException, ParseException {
 
         LOG.info("Merge process started.");
         long start = System.currentTimeMillis();
@@ -59,7 +58,7 @@ public class MergerInstance {
         combineProperties(partitions, inputDir, outputDir, Constants.FUSION_PROPERTIES);
         combineStatistics(partitions, inputDir, outputDir, Constants.STATS);
 
-        switch(fusionMode){
+        switch (fusionMode) {
             case L_MODE:
                 //do nothing
                 break;
@@ -117,7 +116,7 @@ public class MergerInstance {
         File[] partitionDirs = Arrays.stream(dirs)
                 .filter(f -> f.isDirectory()).toArray(File[]::new);
 
-        if(partitionDirs.length != partitions){
+        if (partitionDirs.length != partitions) {
             LOG.error("Partitions found do not match configuration.");
             throw new WrongInputException("Partitions found do not match configuration.");
         }
@@ -134,7 +133,7 @@ public class MergerInstance {
 
         try {
 
-            String outputFilepath = outputDir + datasetId + ".temp";
+            String outputFilepath = outputDir + datasetId + Constants.TEMP;
             merge(filePaths, outputFilepath);
 
         } catch (IOException ex) {
@@ -150,7 +149,7 @@ public class MergerInstance {
         File[] partitionDirs = Arrays.stream(dirs)
                 .filter(f -> f.isDirectory()).toArray(File[]::new);
 
-        if(partitionDirs.length != partitions){
+        if (partitionDirs.length != partitions) {
             LOG.error("Partitions found do not match configuration.");
             throw new WrongInputException("Partitions found do not match configuration.");
         }
@@ -176,7 +175,7 @@ public class MergerInstance {
         }
     }
 
-    private void combineProperties(int partitions, String inputDir, String outputDir, String propsId) 
+    private void combineProperties(int partitions, String inputDir, String outputDir, String propsId)
             throws WrongInputException, MergeOperationException {
 
         File inputDirectory = new File(inputDir);
@@ -184,7 +183,7 @@ public class MergerInstance {
         File[] partitionDirs = Arrays.stream(dirs)
                 .filter(f -> f.isDirectory()).toArray(File[]::new);
 
-        if(partitionDirs.length != partitions){
+        if (partitionDirs.length != partitions) {
             LOG.error("Partitions found do not match configuration.");
             throw new WrongInputException("Partitions found do not match configuration.");
         }
@@ -208,7 +207,7 @@ public class MergerInstance {
         }
     }
 
-    private void combineStatistics(int partitions, String inputDir, String outputDir, String statsId) 
+    private void combineStatistics(int partitions, String inputDir, String outputDir, String statsId)
             throws WrongInputException, MergeOperationException, ParseException {
 
         File inputDirectory = new File(inputDir);
@@ -216,7 +215,7 @@ public class MergerInstance {
         File[] partitionDirs = Arrays.stream(dirs)
                 .filter(f -> f.isDirectory()).toArray(File[]::new);
 
-        if(partitionDirs.length != partitions){
+        if (partitionDirs.length != partitions) {
             LOG.error("Partitions found do not match configuration.");
             throw new WrongInputException("Partitions found do not match configuration.");
         }
@@ -263,15 +262,15 @@ public class MergerInstance {
         Path outFile = Paths.get(outputFilename);
         OutputStream out = Files.newOutputStream(outFile);
         Properties combinedProperties = new Properties();
-        combinedProperties.setProperty(Constants.FUSED_PROPERTY, "0");
-        combinedProperties.setProperty(Constants.REJECTED_PROPERTY, "0");
+        combinedProperties.setProperty(Constants.FUSED_PROPERTY, Constants.ZERO_VALUE);
+        combinedProperties.setProperty(Constants.REJECTED_PROPERTY, Constants.ZERO_VALUE);
 
         for (String path : paths) {
 
             Properties currentProperty = new Properties();
             InputStream input = new FileInputStream(path);
             currentProperty.load(input);
-            
+
             String fused = combinedProperties.getProperty(Constants.FUSED_PROPERTY);
             String tempFused = currentProperty.getProperty(Constants.FUSED_PROPERTY);
             Double fusedValue = Double.parseDouble(fused);
@@ -279,13 +278,13 @@ public class MergerInstance {
             Double combinedFused = fusedValue + tempFusedValue;
 
             combinedProperties.setProperty(Constants.FUSED_PROPERTY, combinedFused.toString());
-            
+
             String rejected = combinedProperties.getProperty(Constants.REJECTED_PROPERTY);
             String tempRejected = currentProperty.getProperty(Constants.REJECTED_PROPERTY);
             Double rejectedValue = Double.parseDouble(rejected);
             Double tempRejectedValue = Double.parseDouble(tempRejected);
             Double combinedRejected = rejectedValue + tempRejectedValue;
-            
+
             combinedProperties.setProperty(Constants.REJECTED_PROPERTY, combinedRejected.toString());
 
         }
@@ -298,14 +297,12 @@ public class MergerInstance {
 
         JSONParser parser = new JSONParser();
         JSONObject combinedStatsJson = null;// = new JSONObject();
- 
-        for(String path : paths){
 
-            LOG.trace("-new path-");
-            LOG.trace(path);
+        for (String path : paths) {
+
             JSONObject currentStatJson = (JSONObject) parser.parse(new FileReader(path));
 
-            if(combinedStatsJson == null){
+            if (combinedStatsJson == null) {
                 combinedStatsJson = currentStatJson;
                 //skip this iteration to avoid double combineProps of the first stats.
                 continue;
@@ -313,80 +310,157 @@ public class MergerInstance {
 
             Set<Entry<String, JSONObject>> currentStats = currentStatJson.entrySet();
 
-            for(Entry<String, JSONObject> currentStat : currentStats){
-                LOG.trace("entry: " + currentStat.getKey());
+            for (Entry<String, JSONObject> currentStat : currentStats) {
                 String statKey = currentStat.getKey();
 
-                if(statKey.contains("Percent")){
-                    //combinePercents();
-                } else if(statKey.contains("full")){
-                    //combineFullMatching
-                } else if(statKey.equals("linkedPois")) {
-                    //todo custom stats
-                } else if(statKey.equals("totalEmptyProperties")) {
-                    
-                } else if(statKey.equals("linkedVsTotal")) {
-                    
-                } else if(statKey.equals("linkedTriples")) {
-                    
-                } else if(statKey.equals("phonesLonger")) {
-                    
-                } else if(statKey.equals("totalNonEmptyProperties")) {
-                    
-                } else if(statKey.equals("namesLonger")) {
-                    
+                if (currentStat.getValue().get(Constants.Stats.TYPE).equals(Constants.Stats.UNDEFINED)) {
+                    //skip calculation of stat. (The stat will be present at the merged file as undefined)
+                    continue;
+                }
+
+                if (statKey.contains(Constants.Stats.Keys.PERCENT)) {
+                    combinePercentStat(currentStat, combinedStatsJson);
+                } else if (statKey.contains(Constants.Stats.Keys.FULL)) {
+                    combineFullMatchingStat(currentStat, combinedStatsJson);
+                } else if (statKey.contains(Constants.Stats.Keys.LONGER)) {
+                    combineFullMatchingStat(currentStat, combinedStatsJson);
+                } else if (statKey.equals(Constants.Stats.Keys.LINKED_POIS)) {
+                    combineCustomStat(currentStat, combinedStatsJson);
+                } else if (statKey.equals(Constants.Stats.Keys.TOTAL_EMPTY_PROPERTIES)) {
+                    combineCustomStat(currentStat, combinedStatsJson);
+                } else if (statKey.equals(Constants.Stats.Keys.TOTAL_NON_EMPTY_PROPERTIES)) {
+                    combineCustomStat(currentStat, combinedStatsJson);
+                } else if (statKey.equals(Constants.Stats.Keys.LINKED_VS_TOTAL)) {
+                    combineCustomStat(currentStat, combinedStatsJson);
+                } else if (statKey.equals(Constants.Stats.Keys.LINKED_TRIPLES)) {
+                    combineCustomStat(currentStat, combinedStatsJson);
                 } else {
-                    combineStat(currentStat, combinedStatsJson);
+                    combineDefaultStat(currentStat, combinedStatsJson);
                 }
             }
         }
 
         try (FileWriter file = new FileWriter(outputFilename)) {
-            if(combinedStatsJson != null){
+            if (combinedStatsJson != null) {
                 file.write(combinedStatsJson.toJSONString());
                 LOG.info(Constants.STATS + " combined.");
             }
         }
     }
 
-    private void combineStat(Entry<String, JSONObject> currentStat, JSONObject combinedStatsJson) 
+    private void combineDefaultStat(Entry<String, JSONObject> currentStat, JSONObject combinedStatsJson)
             throws NumberFormatException {
-        
+
         JSONObject stat = currentStat.getValue();
         String statValueA = null;
         String statValueB = null;
         String statTotal = null;
 
-        if(stat.get("valueA") != null && stat.get("valueB") != null && stat.get("valueTotal") != null){
-            statValueA = stat.get("valueA").toString();
-            statValueB = stat.get("valueB").toString();
-            statTotal = stat.get("valueTotal").toString();
+        if (stat.get(Constants.Stats.VALUE_A) != null && stat.get(Constants.Stats.VALUE_B) != null && stat.get(Constants.Stats.VALUE_TOTAL) != null) {
+            statValueA = stat.get(Constants.Stats.VALUE_A).toString();
+            statValueB = stat.get(Constants.Stats.VALUE_B).toString();
+            statTotal = stat.get(Constants.Stats.VALUE_TOTAL).toString();
         }
 
         JSONObject combined = (JSONObject) combinedStatsJson.get(currentStat.getKey());
-        
-        String combinedValueA = (String) combined.get("valueA");
-        String combinedValueB = (String) combined.get("valueB");
-        LOG.debug("combinedValueA: " + combinedValueA);
-        
-        if(combinedValueA != null && combinedValueB != null && statTotal != null){
+
+        String combinedValueA = (String) combined.get(Constants.Stats.VALUE_A);
+        String combinedValueB = (String) combined.get(Constants.Stats.VALUE_B);
+
+        if (combinedValueA != null && combinedValueB != null && statTotal != null) {
             Double valA = Double.parseDouble(combinedValueA);
             Double valB = Double.parseDouble(combinedValueB);
             Double total = valA + valB;
-            
+
             Double oldValA = Double.parseDouble(statValueA);
             Double oldValB = Double.parseDouble(statValueB);
             Double oldTotal = Double.parseDouble(statTotal);
             Double cValA = oldValA + valA;
             Double cValB = oldValB + valB;
             Double cValTotal = oldTotal + total;
-            
-            combined.put("valueA", cValA.toString());
-            combined.put("valueB", cValB.toString());
-            combined.put("valueTotal", cValTotal.toString());
-            
+
+            combined.put(Constants.Stats.VALUE_A, cValA.toString());
+            combined.put(Constants.Stats.VALUE_B, cValB.toString());
+            combined.put(Constants.Stats.VALUE_TOTAL, cValTotal.toString());
+
         }
-        
+
+        combinedStatsJson.put(currentStat.getKey(), combined);
+    }
+
+    private void combinePercentStat(Entry<String, JSONObject> currentStat, JSONObject combinedStatsJson)
+            throws NumberFormatException {
+
+        JSONObject stat = currentStat.getValue();
+
+        String statValueA = stat.get(Constants.Stats.VALUE_A).toString();
+        String statValueB = stat.get(Constants.Stats.VALUE_B).toString();
+
+        JSONObject combined = (JSONObject) combinedStatsJson.get(currentStat.getKey());
+
+        String combinedValueA = (String) combined.get(Constants.Stats.VALUE_A);
+        String combinedValueB = (String) combined.get(Constants.Stats.VALUE_B);
+
+        if (combinedValueA != null && combinedValueB != null) {
+
+            Double valA = Double.parseDouble(combinedValueA);
+            Double valB = Double.parseDouble(combinedValueB);
+
+            Double oldValA = Double.parseDouble(statValueA);
+            Double oldValB = Double.parseDouble(statValueB);
+
+            Double cValA = (oldValA + valA) / 2;
+            Double cValB = (oldValB + valB) / 2;
+
+            combined.put(Constants.Stats.VALUE_A, cValA.toString());
+            combined.put(Constants.Stats.VALUE_B, cValB.toString());
+
+        }
+
+        combinedStatsJson.put(currentStat.getKey(), combined);
+    }
+
+    private void combineFullMatchingStat(Entry<String, JSONObject> currentStat, JSONObject combinedStatsJson)
+            throws NumberFormatException {
+
+        JSONObject stat = currentStat.getValue();
+        String statBoth = stat.get(Constants.Stats.VALUE_BOTH).toString();
+        JSONObject combined = (JSONObject) combinedStatsJson.get(currentStat.getKey());
+        String combinedBoth = (String) combined.get(Constants.Stats.VALUE_BOTH);
+
+        if (combinedBoth != null) {
+            Double both = Double.parseDouble(combinedBoth);
+            Double oldBoth = Double.parseDouble(statBoth);
+            Double combinedBothValue = oldBoth + both;
+            combined.put(Constants.Stats.VALUE_BOTH, combinedBothValue.toString());
+        }
+        combinedStatsJson.put(currentStat.getKey(), combined);
+    }
+
+    private void combineCustomStat(Entry<String, JSONObject> currentStat, JSONObject combinedStatsJson)
+            throws NumberFormatException {
+
+        JSONObject stat = currentStat.getValue();
+        String statValueA = stat.get(Constants.Stats.VALUE_A).toString();
+        String statValueB = stat.get(Constants.Stats.VALUE_B).toString();
+
+        JSONObject combined = (JSONObject) combinedStatsJson.get(currentStat.getKey());
+
+        String combinedValueA = (String) combined.get(Constants.Stats.VALUE_A);
+        String combinedValueB = (String) combined.get(Constants.Stats.VALUE_B);
+
+        if (combinedValueA != null && combinedValueB != null) {
+            Double valA = Double.parseDouble(combinedValueA);
+            Double valB = Double.parseDouble(combinedValueB);
+            Double oldValA = Double.parseDouble(statValueA);
+            Double oldValB = Double.parseDouble(statValueB);
+            Double cValA = oldValA + valA;
+            Double cValB = oldValB + valB;
+
+            combined.put(Constants.Stats.VALUE_A, cValA.toString());
+            combined.put(Constants.Stats.VALUE_B, cValB.toString());
+        }
+
         combinedStatsJson.put(currentStat.getKey(), combined);
     }
 
@@ -395,7 +469,7 @@ public class MergerInstance {
         Path outFile = Paths.get(fusedFilepath);
 
         try (FileChannel out = FileChannel.open(outFile, StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
-            Path inFile1 = Paths.get(fusedFilepath + ".temp");
+            Path inFile1 = Paths.get(fusedFilepath + Constants.TEMP);
             try (FileChannel in = FileChannel.open(inFile1, StandardOpenOption.READ)) {
                 for (long p = 0, l = in.size(); p < l;) {
                     p += in.transferTo(p, l - p, out);
@@ -410,9 +484,9 @@ public class MergerInstance {
             }
         }
 
-        LOG.info("Deleting " + fusedFilepath + ".temp");
-        new File(fusedFilepath + ".temp").delete();
-        LOG.info("Fused combined at " + fusedFilepath + ".temp" + " complete.");
+        LOG.info("Deleting " + fusedFilepath + Constants.TEMP);
+        new File(fusedFilepath + Constants.TEMP).delete();
+        LOG.info("Fused combined at " + fusedFilepath + Constants.TEMP + " complete.");
     }
 
     public static String getFormattedTime(long millis) {
@@ -427,6 +501,6 @@ public class MergerInstance {
     private void copyRemaining(String source, String target) throws IOException {
         Path sourcePath = Paths.get(source);
         Path targetPath = Paths.get(target);
-        Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);  
+        Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
     }
 }

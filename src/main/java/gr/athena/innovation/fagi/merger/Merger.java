@@ -42,8 +42,8 @@ public class Merger {
 
         try {
 
-            MergerInstance partitioner = new MergerInstance();
-            partitioner.run(config);
+            MergerInstance merger = new MergerInstance();
+            merger.run(config);
 
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);

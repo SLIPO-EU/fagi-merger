@@ -36,12 +36,14 @@ public class MergerInstance {
     public void run(String configPath) throws WrongInputException, MergeOperationException, IOException, ParseException {
 
         LOG.info("Merge process started.");
+
         long start = System.currentTimeMillis();
 
         ConfigParser parser = new ConfigParser();
         Configuration config = parser.parse(configPath);
 
         LOG.info("Configuration: " + config.toString());
+
         int partitions = config.getPartitions();
         String unlinkedA = config.getUnlinkedA();
         String datasetA = config.getDatasetA();
@@ -52,11 +54,12 @@ public class MergerInstance {
 
         EnumFusionMode fusionMode = config.getFusionMode();
 
-        mergeFused(partitions, inputDir, outputDir, Constants.FUSED);
-        mergeDataset(partitions, inputDir, outputDir, Constants.REMAINING);
-        mergeDataset(partitions, inputDir, outputDir, Constants.AMBIGUOUS);
-        combineProperties(partitions, inputDir, outputDir, Constants.FUSION_PROPERTIES);
-        combineStatistics(partitions, inputDir, outputDir, Constants.STATS);
+        mergeFused(partitions, inputDir, outputDir, Constants.FUSED); //merge all fused.nt files
+        mergeDataset(partitions, inputDir, outputDir, Constants.REMAINING); //merge remainint.nt files
+        mergeDataset(partitions, inputDir, outputDir, Constants.AMBIGUOUS); //merge ambiguous.nt files
+
+        combineProperties(partitions, inputDir, outputDir, Constants.FUSION_PROPERTIES); //merge fusion.properties files
+        combineStatistics(partitions, inputDir, outputDir, Constants.STATS); //merge stats.json files
 
         switch (fusionMode) {
             case L_MODE:

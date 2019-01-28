@@ -1,15 +1,12 @@
 package gr.athena.innovation.fagi.merger;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.io.File;
 
 /**
  *
  * @author nkarag
  */
 public class Configuration {
-
-    private static final Logger LOG = LogManager.getLogger(Configuration.class);
 
     private static Configuration configuration;
     private int partitions;
@@ -20,11 +17,20 @@ public class Configuration {
     private String datasetB;
     private String inputDir;
     private String outputDir;
+    private String partialOutputDirName;
+    private String fused;
+    private String remaining;
+    private String ambiguous;
+    private String statistics;
+    private String fusionLog;
+    
 
     @Override
     public String toString() {
-        return "\nConfiguration{" + "\n\tpartitions=" + partitions + "\n\tfusionMode=" + fusionMode 
-                + "\n\tinputDir=" + inputDir + "\n\toutputDir=" + outputDir + "\n}";
+        return "Configuration{" + "partitions=" + partitions + ", fusionMode=" + fusionMode + ", unlinkedA=" 
+                + unlinkedA + ", datasetA=" + datasetA + ", unlinkedB=" + unlinkedB + ", datasetB=" + datasetB 
+                + ", inputDir=" + inputDir + ", outputDir=" + outputDir 
+                + ", partialOutputDirName=" + partialOutputDirName + '}';
     }
 
     private Configuration() {
@@ -101,5 +107,93 @@ public class Configuration {
 
     public void setDatasetB(String datasetB) {
         this.datasetB = datasetB;
+    }
+
+    public String getPartialOutputDirName() {
+        return partialOutputDirName;
+    }
+
+    public void setPartialOutputDirName(String partialOutputDirName) {
+        this.partialOutputDirName = partialOutputDirName;
+    }
+
+    public String getFused() {
+        return fused;
+    }
+
+    public void setFused(String fused) throws WrongInputException {
+        if(fused == null || fused.isEmpty()){
+            if(outputDir == null || outputDir.isEmpty()){
+                throw new WrongInputException("Define fused filepath in XML");
+            }
+            
+            this.fused = outputDir + File.separator + Constants.FUSED;
+        } else {
+            this.fused = fused;
+        }
+    }
+
+    public String getRemaining() {
+        return remaining;
+    }
+
+    public void setRemaining(String remaining) throws WrongInputException {
+        if(remaining == null || remaining.isEmpty()){
+            if(outputDir == null || outputDir.isEmpty()){
+                throw new WrongInputException("Define remaining filepath in XML");
+            }
+            
+            this.remaining = outputDir + File.separator + Constants.REMAINING;
+        } else {
+            this.remaining = remaining;
+        }
+    }
+
+    public String getAmbiguous() {
+        return ambiguous;
+    }
+
+    public void setAmbiguous(String ambiguous) throws WrongInputException {
+        if(ambiguous == null || ambiguous.isEmpty()){
+            if(outputDir == null || outputDir.isEmpty()){
+                throw new WrongInputException("Define ambiguous filepath in XML");
+            }
+            
+            this.ambiguous = outputDir + File.separator + Constants.AMBIGUOUS;
+        } else {
+            this.ambiguous = ambiguous;
+        }
+    }
+
+    public String getStatistics() {
+        return statistics;
+    }
+
+    public void setStatistics(String statistics) throws WrongInputException {
+        if(statistics == null || statistics.isEmpty()){
+            if(outputDir == null || outputDir.isEmpty()){
+                throw new WrongInputException("Define statistics filepath in XML");
+            }
+            
+            this.statistics = outputDir + File.separator + Constants.STATS;
+        } else {
+            this.statistics = statistics;
+        }
+    }
+
+    public String getFusionLog() {
+        return fusionLog;
+    }
+
+    public void setFusionLog(String fusionLog) throws WrongInputException {
+        if(fusionLog == null || fusionLog.isEmpty()){
+            if(outputDir == null || outputDir.isEmpty()){
+                throw new WrongInputException("Define fusionLog filepath in XML");
+            }
+            
+            this.fusionLog = outputDir + File.separator + Constants.DEFAULT_FUSION_LOG_FILENAME;
+        } else {
+            this.fusionLog = fusionLog;
+        }
     }
 }

@@ -8,6 +8,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -77,14 +78,19 @@ public class ConfigParser {
             }
             configuration.setInputDir(inputDir);
 
-            NodeList out = doc.getElementsByTagName(Constants.XML.OUTPUT_DIR);
-            String outputDir = out.item(0).getTextContent();
-            
-            if(!new File(outputDir).isDirectory()){
-                throw new WrongInputException("Output path is not a directory. Specify an existing directory path.");
-            }
-            configuration.setOutputDir(outputDir);
+//            NodeList out = doc.getElementsByTagName(Constants.XML.OUTPUT_DIR);
+//            String outputDir = out.item(0).getTextContent();
+//            
+//            if(!new File(outputDir).isDirectory()){
+//                throw new WrongInputException("Output path is not a directory. Specify an existing directory path.");
+//            }
+//            configuration.setOutputDir(outputDir);
 
+            NodeList partialOutputDirName = doc.getElementsByTagName(Constants.XML.PARTIAL_OUTPUT_DIR_NAME);
+            String dirName = partialOutputDirName.item(0).getTextContent();
+
+            configuration.setPartialOutputDirName(dirName);
+            
             NodeList m = doc.getElementsByTagName(Constants.XML.FUSION_MODE);
             String modeString = m.item(0).getTextContent();
             EnumFusionMode mode = EnumFusionMode.fromString(modeString.toUpperCase());
@@ -102,6 +108,40 @@ public class ConfigParser {
                     LOG.info("Mode not supported.");
                     throw new UnsupportedOperationException("Wrong Output mode!");               
             }
+            
+            
+            NodeList targetNodeList = doc.getElementsByTagName(Constants.XML.TARGET);
+            Node targetNode = targetNodeList.item(0);
+            NodeList targetChilds = targetNode.getChildNodes();
+            for (int i = 0; i < targetChilds.getLength(); i++) {
+                Node n = targetChilds.item(i);
+
+                if (n.getNodeType() == Node.ELEMENT_NODE) {
+
+                    if (n.getNodeName().equalsIgnoreCase(Constants.XML.OUTPUT_DIR)) {
+                        NodeList out = doc.getElementsByTagName(Constants.XML.OUTPUT_DIR);
+                        String outputDir = out.item(0).getTextContent();
+
+                        if(!new File(outputDir).isDirectory()){
+                            throw new WrongInputException("Output path is not a directory. Specify an existing directory path.");
+                        }
+                        configuration.setOutputDir(outputDir);
+
+                    } else if (n.getNodeName().equalsIgnoreCase(Constants.XML.FUSED)) {
+                        configuration.setFused(n.getTextContent());
+                    } else if (n.getNodeName().equalsIgnoreCase(Constants.XML.REMAINING)) {
+                        configuration.setRemaining(n.getTextContent());
+                    } else if (n.getNodeName().equalsIgnoreCase(Constants.XML.AMBIGUOUS)) {
+                        configuration.setAmbiguous(n.getTextContent());
+                    } else if (n.getNodeName().equalsIgnoreCase(Constants.XML.STATISTICS)) {
+                        configuration.setStatistics(n.getTextContent());
+                    } else if (n.getNodeName().equalsIgnoreCase(Constants.XML.FUSION_LOG)) {
+                        configuration.setFusionLog(n.getTextContent());
+                    }
+                }
+                n.getNextSibling();
+            }
+            
         } catch (ParserConfigurationException | SAXException | IOException | DOMException e) {
             LOG.fatal("Exception occured while parsing the configuration: "
                     + configurationPath + "\n" + e);

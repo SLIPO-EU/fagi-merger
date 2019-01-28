@@ -37,6 +37,11 @@ public class Constants {
     public static final String STATS = "stats.json";
     
     /**
+     * Fusion log default filename.
+     */
+    public static final String DEFAULT_FUSION_LOG_FILENAME = "fusionLog.txt";
+    
+    /**
      * Temporary file extension.
      */
     public static final String TEMP = ".temp";
@@ -121,6 +126,40 @@ public class Constants {
          */
         public static final String OUTPUT_DIR = "outputDir";
         
+        /**
+         * Name for partial output directory tag in XML.
+         */
+        public static final String PARTIAL_OUTPUT_DIR_NAME = "partialOutputDirName";
+
+        /**
+         * Name for target tag in XML.
+         */
+        public static final String TARGET = "target";
+        
+        /**
+         * Name for fused tag in XML.
+         */
+        public static final String FUSED = "fused";
+
+        /**
+         * Name for remaining tag in XML.
+         */
+        public static final String REMAINING = "remaining";
+
+        /**
+         * Name for ambiguous tag in XML.
+         */
+        public static final String AMBIGUOUS = "ambiguous";
+        
+        /**
+         * Name for statistics tag in XML.
+         */
+        public static final String STATISTICS = "statistics";
+        
+        /**
+         * Name for fusionLog tag in XML.
+         */
+        public static final String FUSION_LOG = "fusionLog";
     }
     
     /**

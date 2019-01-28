@@ -51,15 +51,43 @@ public class MergerInstance {
         String datasetB = config.getDatasetB();
         String inputDir = config.getInputDir().replaceFirst("[/]+$", "");
         String outputDir = config.getOutputDir().replaceFirst("[/]+$", "");
+        String partialOutputDirName = config.getPartialOutputDirName();
+
+        File[] partitionDirs;
+        if(partialOutputDirName != null && !partialOutputDirName.isEmpty()){
+            
+            File inputDirectory = new File(inputDir);
+            File[] dirs = inputDirectory.listFiles();
+            File[] dirsUnderInput = Arrays.stream(dirs).filter(f -> f.isDirectory()).toArray(File[]::new);
+            
+            List<File> partialPaths = new ArrayList<>();
+            for(File dir : dirsUnderInput){
+                String partialOutputPath = dir.getAbsolutePath() + File.separator + partialOutputDirName;
+                partialPaths.add(new File(partialOutputPath));
+            }
+
+            partitionDirs = partialPaths.toArray(new File[0]);
+
+        } else {
+            File inputDirectory = new File(inputDir);
+            File[] dirs = inputDirectory.listFiles();
+            partitionDirs = Arrays.stream(dirs).filter(f -> f.isDirectory()).toArray(File[]::new);
+        }
+        
+        if (partitionDirs.length != partitions) {
+            LOG.error("Partitions found do not match configuration.");
+            throw new WrongInputException("Partitions found do not match configuration.");
+        }
 
         EnumFusionMode fusionMode = config.getFusionMode();
 
-        mergeFused(partitions, inputDir, outputDir, Constants.FUSED); //merge all fused.nt files
-        mergeDataset(partitions, inputDir, outputDir, Constants.REMAINING); //merge remainint.nt files
-        mergeDataset(partitions, inputDir, outputDir, Constants.AMBIGUOUS); //merge ambiguous.nt files
+        mergeFused(partitionDirs, outputDir, Constants.FUSED, config.getFused()); //merge all fused.nt files
+        mergeDataset(partitionDirs, Constants.REMAINING, config.getRemaining()); //merge remainint.nt files
+        mergeDataset(partitionDirs, Constants.AMBIGUOUS, config.getAmbiguous()); //merge ambiguous.nt files
+        mergeDataset(partitionDirs, Constants.DEFAULT_FUSION_LOG_FILENAME, config.getFusionLog()); //merge fusionLog.txt files
 
-        combineProperties(partitions, inputDir, outputDir, Constants.FUSION_PROPERTIES); //merge fusion.properties files
-        combineStatistics(partitions, inputDir, outputDir, Constants.STATS); //merge stats.json files
+        combineProperties(partitionDirs, outputDir, Constants.FUSION_PROPERTIES); //merge fusion.properties files
+        combineStatistics(partitionDirs, Constants.STATS, config.getStatistics()); //merge stats.json files
 
         switch (fusionMode) {
             case L_MODE:
@@ -68,40 +96,40 @@ public class MergerInstance {
             case AA_MODE:
                 //combine fused with unlinked from A
                 //copy dataset B as is to remaining
-                combineFused(outputDir + File.separator + Constants.FUSED, unlinkedA);
-                copyRemaining(datasetB, outputDir + File.separator + Constants.REMAINING);
+                combineFused(config.getFused(), unlinkedA);
+                copyRemaining(datasetB, config.getRemaining());
                 break;
             case BB_MODE:
                 //combine fused with unlinked from B
                 //copy dataset A as is to remaining
-                combineFused(outputDir + File.separator + Constants.FUSED, unlinkedB);
-                copyRemaining(datasetA, outputDir + File.separator + Constants.REMAINING);
+                combineFused(config.getFused(), unlinkedB);
+                copyRemaining(datasetA, config.getRemaining());
                 break;
             case AB_MODE:
                 //combine fused with unlinked from A and unlinked from B.
                 //copy dataset B as is to remaining
-                combineFused(outputDir + File.separator + Constants.FUSED, unlinkedA);
-                combineFused(outputDir + File.separator + Constants.FUSED, unlinkedB);
-                copyRemaining(datasetB, outputDir + File.separator + Constants.REMAINING);
+                combineFused(config.getFused(), unlinkedA);
+                combineFused(config.getFused(), unlinkedB);
+                copyRemaining(datasetB, config.getRemaining());
                 break;
             case BA_MODE:
                 //combine fused with unlinked from A and unlinked from B.
                 //copy dataset A as is to remaining
-                combineFused(outputDir + File.separator + Constants.FUSED, unlinkedB);
-                combineFused(outputDir + File.separator + Constants.FUSED, unlinkedA);
-                copyRemaining(datasetA, outputDir + File.separator + Constants.REMAINING);
+                combineFused(config.getFused(), unlinkedB);
+                combineFused(config.getFused(), unlinkedA);
+                copyRemaining(datasetA, config.getRemaining());
                 break;
             case A_MODE:
                 //combine fused with unlinked from A.
                 //copy unlinked B as is to remaining
-                combineFused(outputDir + File.separator + Constants.FUSED, unlinkedA);
-                copyRemaining(unlinkedB, outputDir + File.separator + Constants.REMAINING);
+                combineFused(config.getFused(), unlinkedA);
+                copyRemaining(unlinkedB, config.getRemaining());
                 break;
             case B_MODE:
                 //combine fused with unlinked from B.
                 //copy unlinked A as is to remaining
-                combineFused(outputDir + File.separator + Constants.FUSED, unlinkedB);
-                copyRemaining(unlinkedA, outputDir + File.separator + Constants.REMAINING);
+                combineFused(config.getFused(), unlinkedB);
+                copyRemaining(unlinkedA, config.getRemaining());
                 break;
         }
 
@@ -109,87 +137,62 @@ public class MergerInstance {
 
         LOG.info("Merge process complete.");
         String time = getFormattedTime(end - start);
-        LOG.info("Time passed: " + time);
+        LOG.info("Time passed: " + time + ".");
     }
 
-    private void mergeFused(int partitions, String inputDir, String outputDir, String datasetId) throws WrongInputException, MergeOperationException {
-
-        File inputDirectory = new File(inputDir);
-        File[] dirs = inputDirectory.listFiles();
-        File[] partitionDirs = Arrays.stream(dirs)
-                .filter(f -> f.isDirectory()).toArray(File[]::new);
-
-        if (partitionDirs.length != partitions) {
-            LOG.error("Partitions found do not match configuration.");
-            throw new WrongInputException("Partitions found do not match configuration.");
-        }
-
-        List<String> filePaths = new ArrayList<>();
-        for (File partitionDir : partitionDirs) {
-            File[] files = partitionDir.listFiles();
-            for (File file : files) {
-                if (file.getName().contains(datasetId)) {
-                    filePaths.add(file.getAbsolutePath());
-                }
-            }
-        }
-
-        try {
-
-            String outputFilepath = outputDir + File.separator + datasetId + Constants.TEMP;
-            merge(filePaths, outputFilepath);
-
-        } catch (IOException ex) {
-            LOG.error(ex);
-            throw new MergeOperationException(ex.getMessage());
-        }
-    }
-
-    private void mergeDataset(int partitions, String inputDir, String outputDir, String datasetId) throws WrongInputException, MergeOperationException {
-
-        File inputDirectory = new File(inputDir);
-        File[] dirs = inputDirectory.listFiles();
-        File[] partitionDirs = Arrays.stream(dirs)
-                .filter(f -> f.isDirectory()).toArray(File[]::new);
-
-        if (partitionDirs.length != partitions) {
-            LOG.error("Partitions found do not match configuration.");
-            throw new WrongInputException("Partitions found do not match configuration.");
-        }
-
-        List<String> filePaths = new ArrayList<>();
-        for (File partitionDir : partitionDirs) {
-            File[] files = partitionDir.listFiles();
-            for (File file : files) {
-                if (file.getName().contains(datasetId)) {
-                    filePaths.add(file.getAbsolutePath());
-                }
-            }
-        }
-
-        try {
-
-            String outputFilepath = outputDir + File.separator + datasetId;
-            merge(filePaths, outputFilepath);
-
-        } catch (IOException ex) {
-            LOG.error(ex);
-            throw new MergeOperationException(ex.getMessage());
-        }
-    }
-
-    private void combineProperties(int partitions, String inputDir, String outputDir, String propsId)
+    private void mergeFused(File[] partitionDirs, String outputDir, String datasetId, String path) 
             throws WrongInputException, MergeOperationException {
 
-        File inputDirectory = new File(inputDir);
-        File[] dirs = inputDirectory.listFiles();
-        File[] partitionDirs = Arrays.stream(dirs)
-                .filter(f -> f.isDirectory()).toArray(File[]::new);
-
-        if (partitionDirs.length != partitions) {
-            LOG.error("Partitions found do not match configuration.");
-            throw new WrongInputException("Partitions found do not match configuration.");
+        List<String> filePaths = new ArrayList<>();
+        for (File partitionDir : partitionDirs) {
+            addFilePaths(partitionDir, datasetId, filePaths);
         }
+
+        try {
+
+            //String outputFilepath = outputDir + File.separator + datasetId + Constants.TEMP;
+            String outputFilepath = path + Constants.TEMP;
+            merge(filePaths, outputFilepath);
+
+        } catch (IOException ex) {
+            LOG.error(ex);
+            throw new MergeOperationException(ex.getMessage());
+        }
+    }
+
+    private void addFilePaths(File partitionDir, String datasetId, List<String> filePaths) {
+        File[] files = partitionDir.listFiles();
+        for (File file : files) {
+            if (file.getName().contains(datasetId)) {
+                filePaths.add(file.getAbsolutePath());
+            }
+        }
+    }
+
+    private void mergeDataset(File[] partitionDirs, String datasetId, String outputPath) 
+            throws WrongInputException, MergeOperationException {
+
+        List<String> filePaths = new ArrayList<>();
+        for (File partitionDir : partitionDirs) {
+            File[] files = partitionDir.listFiles();
+            for (File file : files) {
+                if (file.getName().contains(datasetId)) {
+                    filePaths.add(file.getAbsolutePath());
+                }
+            }
+        }
+
+        try {
+            merge(filePaths, outputPath);
+
+        } catch (IOException ex) {
+            LOG.error(ex);
+            throw new MergeOperationException(ex.getMessage());
+        }
+    }
+
+    private void combineProperties(File[] partitionDirs, String outputDir, String propsId)
+            throws WrongInputException, MergeOperationException {
 
         List<String> filePaths = new ArrayList<>();
         for (File partitionDir : partitionDirs) {
@@ -210,19 +213,8 @@ public class MergerInstance {
         }
     }
 
-    private void combineStatistics(int partitions, String inputDir, String outputDir, String statsId)
+    private void combineStatistics(File[] partitionDirs, String statsId, String outputPath)
             throws WrongInputException, MergeOperationException, ParseException {
-
-        File inputDirectory = new File(inputDir);
-        File[] dirs = inputDirectory.listFiles();
-        File[] partitionDirs = Arrays.stream(dirs)
-                .filter(f -> f.isDirectory()).toArray(File[]::new);
-
-        if (partitionDirs.length != partitions) {
-            LOG.error("Partitions found do not match configuration.");
-            throw new WrongInputException("Partitions found do not match configuration.");
-        }
-        //LOG.info(Arrays.asList(partitionDirs));
 
         List<String> filePaths = new ArrayList<>();
         for (File partitionDir : partitionDirs) {
@@ -235,8 +227,7 @@ public class MergerInstance {
         }
 
         try {
-            String outputFilepath = outputDir + File.separator + statsId;
-            combineStats(filePaths, outputFilepath);
+            combineStats(filePaths, outputPath);
         } catch (IOException ex) {
             LOG.error(ex);
             throw new MergeOperationException(ex.getMessage());
@@ -493,11 +484,16 @@ public class MergerInstance {
     }
 
     public static String getFormattedTime(long millis) {
-        String time = String.format("%02d min, %02d sec",
-                TimeUnit.MILLISECONDS.toMinutes(millis),
-                TimeUnit.MILLISECONDS.toSeconds(millis)
-                - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis))
-        );
+        String time;
+        if(millis < 1000){
+            time = millis + "ms";
+        } else {
+            time = String.format("%02d min, %02d sec",
+                    TimeUnit.MILLISECONDS.toMinutes(millis),
+                    TimeUnit.MILLISECONDS.toSeconds(millis)
+                    - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis))
+            );
+        }
         return time;
     }
 

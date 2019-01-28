@@ -49,8 +49,8 @@ public class MergerInstance {
         String datasetA = config.getDatasetA();
         String unlinkedB = config.getUnlinkedB();
         String datasetB = config.getDatasetB();
-        String inputDir = config.getInputDir();
-        String outputDir = config.getOutputDir();
+        String inputDir = config.getInputDir().replaceFirst("[/]+$", "");
+        String outputDir = config.getOutputDir().replaceFirst("[/]+$", "");
 
         EnumFusionMode fusionMode = config.getFusionMode();
 
@@ -68,40 +68,40 @@ public class MergerInstance {
             case AA_MODE:
                 //combine fused with unlinked from A
                 //copy dataset B as is to remaining
-                combineFused(outputDir + Constants.FUSED, unlinkedA);
-                copyRemaining(datasetB, outputDir + Constants.REMAINING);
+                combineFused(outputDir + File.separator + Constants.FUSED, unlinkedA);
+                copyRemaining(datasetB, outputDir + File.separator + Constants.REMAINING);
                 break;
             case BB_MODE:
                 //combine fused with unlinked from B
                 //copy dataset A as is to remaining
-                combineFused(outputDir + Constants.FUSED, unlinkedB);
-                copyRemaining(datasetA, outputDir + Constants.REMAINING);
+                combineFused(outputDir + File.separator + Constants.FUSED, unlinkedB);
+                copyRemaining(datasetA, outputDir + File.separator + Constants.REMAINING);
                 break;
             case AB_MODE:
                 //combine fused with unlinked from A and unlinked from B.
                 //copy dataset B as is to remaining
-                combineFused(outputDir + Constants.FUSED, unlinkedA);
-                combineFused(outputDir + Constants.FUSED, unlinkedB);
-                copyRemaining(datasetB, outputDir + Constants.REMAINING);
+                combineFused(outputDir + File.separator + Constants.FUSED, unlinkedA);
+                combineFused(outputDir + File.separator + Constants.FUSED, unlinkedB);
+                copyRemaining(datasetB, outputDir + File.separator + Constants.REMAINING);
                 break;
             case BA_MODE:
                 //combine fused with unlinked from A and unlinked from B.
                 //copy dataset A as is to remaining
-                combineFused(outputDir + Constants.FUSED, unlinkedB);
-                combineFused(outputDir + Constants.FUSED, unlinkedA);
-                copyRemaining(datasetA, outputDir + Constants.REMAINING);
+                combineFused(outputDir + File.separator + Constants.FUSED, unlinkedB);
+                combineFused(outputDir + File.separator + Constants.FUSED, unlinkedA);
+                copyRemaining(datasetA, outputDir + File.separator + Constants.REMAINING);
                 break;
             case A_MODE:
                 //combine fused with unlinked from A.
                 //copy unlinked B as is to remaining
-                combineFused(outputDir + Constants.FUSED, unlinkedA);
-                copyRemaining(unlinkedB, outputDir + Constants.REMAINING);
+                combineFused(outputDir + File.separator + Constants.FUSED, unlinkedA);
+                copyRemaining(unlinkedB, outputDir + File.separator + Constants.REMAINING);
                 break;
             case B_MODE:
                 //combine fused with unlinked from B.
                 //copy unlinked A as is to remaining
-                combineFused(outputDir + Constants.FUSED, unlinkedB);
-                copyRemaining(unlinkedA, outputDir + Constants.REMAINING);
+                combineFused(outputDir + File.separator + Constants.FUSED, unlinkedB);
+                copyRemaining(unlinkedA, outputDir + File.separator + Constants.REMAINING);
                 break;
         }
 
@@ -136,7 +136,7 @@ public class MergerInstance {
 
         try {
 
-            String outputFilepath = outputDir + datasetId + Constants.TEMP;
+            String outputFilepath = outputDir + File.separator + datasetId + Constants.TEMP;
             merge(filePaths, outputFilepath);
 
         } catch (IOException ex) {
@@ -169,7 +169,7 @@ public class MergerInstance {
 
         try {
 
-            String outputFilepath = outputDir + datasetId;
+            String outputFilepath = outputDir + File.separator + datasetId;
             merge(filePaths, outputFilepath);
 
         } catch (IOException ex) {
@@ -202,7 +202,7 @@ public class MergerInstance {
         }
 
         try {
-            String outputFilepath = outputDir + propsId;
+            String outputFilepath = outputDir + File.separator + propsId;
             combineProps(filePaths, outputFilepath);
         } catch (IOException ex) {
             LOG.error(ex);
@@ -235,7 +235,7 @@ public class MergerInstance {
         }
 
         try {
-            String outputFilepath = outputDir + statsId;
+            String outputFilepath = outputDir + File.separator + statsId;
             combineStats(filePaths, outputFilepath);
         } catch (IOException ex) {
             LOG.error(ex);

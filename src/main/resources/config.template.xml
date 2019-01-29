@@ -1,11 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <merge>
-	<partitions></partitions>
-	<fusionMode>l_mode</fusionMode>
-	<datasetA></datasetA>
-	<datasetB></datasetB>
-	<unlinkedA></unlinkedA>
-	<unlinkedB></unlinkedB>
-	<inputDir></inputDir>
-	<outputDir></outputDir>
+    <partitions></partitions>
+    <fusionMode>aa_mode</fusionMode>
+    <datasetA></datasetA>
+    <datasetB></datasetB>
+    <unlinkedA></unlinkedA>
+    <unlinkedB></unlinkedB>
+    <inputDir></inputDir>
+    <partialOutputDirName></partialOutputDirName>
+    <target>
+        <outputDir></outputDir>
+        <fused></fused>
+        <remaining></remaining>
+        <ambiguous></ambiguous>
+        <statistics></statistics>
+        <fusionLog></fusionLog>
+        <fusionProperties></fusionProperties>
+   </target>
 </merge>

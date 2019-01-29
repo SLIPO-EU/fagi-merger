@@ -23,7 +23,7 @@ public class Configuration {
     private String ambiguous;
     private String statistics;
     private String fusionLog;
-    
+    private String fusionProperties;
 
     @Override
     public String toString() {
@@ -191,9 +191,25 @@ public class Configuration {
                 throw new WrongInputException("Define fusionLog filepath in XML");
             }
             
-            this.fusionLog = outputDir + File.separator + Constants.DEFAULT_FUSION_LOG_FILENAME;
+            this.fusionLog = outputDir + File.separator + Constants.FUSION_LOG;
         } else {
             this.fusionLog = fusionLog;
+        }
+    }
+
+    public String getFusionProperties() {
+        return fusionProperties;
+    }
+
+    public void setFusionProperties(String fusionProperties) throws WrongInputException {
+        if(fusionProperties == null || fusionProperties.isEmpty()){
+            if(outputDir == null || outputDir.isEmpty()){
+                throw new WrongInputException("Define fusionLog filepath in XML");
+            }
+            
+            this.fusionProperties = outputDir + File.separator + Constants.FUSION_PROPERTIES;
+        } else {
+            this.fusionProperties = fusionProperties;
         }
     }
 }

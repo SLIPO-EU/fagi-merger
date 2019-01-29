@@ -135,8 +135,10 @@ public class ConfigParser {
                         configuration.setAmbiguous(n.getTextContent());
                     } else if (n.getNodeName().equalsIgnoreCase(Constants.XML.STATISTICS)) {
                         configuration.setStatistics(n.getTextContent());
-                    } else if (n.getNodeName().equalsIgnoreCase(Constants.XML.FUSION_LOG)) {
+                    } else if (n.getNodeName().equalsIgnoreCase(Constants.XML.FUSION_LOG_TAG)) {
                         configuration.setFusionLog(n.getTextContent());
+                    } else if (n.getNodeName().equalsIgnoreCase(Constants.XML.FUSION_PROPERTIES_TAG)) {
+                        configuration.setFusionProperties(n.getTextContent());
                     }
                 }
                 n.getNextSibling();

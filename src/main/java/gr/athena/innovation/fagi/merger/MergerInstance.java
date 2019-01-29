@@ -84,9 +84,9 @@ public class MergerInstance {
         mergeFused(partitionDirs, outputDir, Constants.FUSED, config.getFused()); //merge all fused.nt files
         mergeDataset(partitionDirs, Constants.REMAINING, config.getRemaining()); //merge remainint.nt files
         mergeDataset(partitionDirs, Constants.AMBIGUOUS, config.getAmbiguous()); //merge ambiguous.nt files
-        mergeDataset(partitionDirs, Constants.DEFAULT_FUSION_LOG_FILENAME, config.getFusionLog()); //merge fusionLog.txt files
+        mergeDataset(partitionDirs, Constants.FUSION_LOG, config.getFusionLog()); //merge fusionLog.txt files
 
-        combineProperties(partitionDirs, outputDir, Constants.FUSION_PROPERTIES); //merge fusion.properties files
+        combineProperties(partitionDirs, config.getFusionProperties(), Constants.FUSION_PROPERTIES); //merge fusion.properties files
         combineStatistics(partitionDirs, Constants.STATS, config.getStatistics()); //merge stats.json files
 
         switch (fusionMode) {
@@ -191,7 +191,7 @@ public class MergerInstance {
         }
     }
 
-    private void combineProperties(File[] partitionDirs, String outputDir, String propsId)
+    private void combineProperties(File[] partitionDirs, String outputPath, String propsId)
             throws WrongInputException, MergeOperationException {
 
         List<String> filePaths = new ArrayList<>();
@@ -205,8 +205,7 @@ public class MergerInstance {
         }
 
         try {
-            String outputFilepath = outputDir + File.separator + propsId;
-            combineProps(filePaths, outputFilepath);
+            combineProps(filePaths, outputPath);
         } catch (IOException ex) {
             LOG.error(ex);
             throw new MergeOperationException(ex.getMessage());

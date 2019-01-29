@@ -33,6 +33,22 @@ Inside the resources directory of the project there is a config.template.xml fil
 
 `inputDir` the directory path that contains the partitions.
 
+`partialOutputDirName` the directory name with the fusion output under a partition directory.
+
+`target` This tag contains child tags (outputDir, fused, remaining, ambiguous, statistics, fusionLog, fusionProperties) with the output configuration of the merging process.
+
 `outputDir` the output directory path for the merged results.
+
+`fused` the output filepath of the (merged) fused file. 
+
+`remaining` the output filepath of the (merged) remaining file. 
+
+`ambiguous` the output filepath of the (merged) ambiguous file. 
+
+`statistics` the output filepath of the computed statistics file. 
+
+`fusionLog` the output filepath of the (merged) fusion log file. 
+
+`fusionProperties` the output filepath of the (merged) fusion properties file. 
 
 

@@ -39,8 +39,8 @@ public class Constants {
     /**
      * Fusion log default filename.
      */
-    public static final String DEFAULT_FUSION_LOG_FILENAME = "fusionLog.txt";
-    
+    public static final String FUSION_LOG = "fusionLog.txt";
+
     /**
      * Temporary file extension.
      */
@@ -159,7 +159,12 @@ public class Constants {
         /**
          * Name for fusionLog tag in XML.
          */
-        public static final String FUSION_LOG = "fusionLog";
+        public static final String FUSION_LOG_TAG = "fusionLog";
+        
+        /**
+         * Name for fusionProperties tag in XML.
+         */
+        public static final String FUSION_PROPERTIES_TAG = "fusionProperties";
     }
     
     /**

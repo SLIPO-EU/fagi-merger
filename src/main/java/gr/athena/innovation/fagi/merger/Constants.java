@@ -198,10 +198,25 @@ public class Constants {
         public static final String TYPE = "type";
         
         /**
+         * Label field.
+         */
+        public static final String LABEL = "label";
+        
+        /**
+         * Value field.
+         */
+        public static final String VALUE = "value";
+        
+        /**
+         * Items field.
+         */
+        public static final String ITEMS = "items";
+
+        /**
          * Undefined value.
          */
         public static final String UNDEFINED = "UNDEFINED";
-        
+
         /**
          * Class containing keys for statistics.
          */

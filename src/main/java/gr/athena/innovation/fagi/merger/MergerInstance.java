@@ -21,6 +21,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -32,6 +33,11 @@ import org.json.simple.parser.ParseException;
 public class MergerInstance {
 
     private static final org.apache.logging.log4j.Logger LOG = LogManager.getLogger(MergerInstance.class);
+    
+    private static final String TYPE = "type";
+    private static final String LABEL = "label";
+    private static final String VALUE = "value";
+    private static final String ABSOLUTE = "ABSOLUTE";
 
     public void run(String configPath) throws WrongInputException, MergeOperationException, IOException, ParseException {
 
@@ -306,6 +312,10 @@ public class MergerInstance {
             for (Entry<String, JSONObject> currentStat : currentStats) {
                 String statKey = currentStat.getKey();
 
+                if(currentStat.getValue().get(Constants.Stats.TYPE) == null){
+                    continue;
+                }
+
                 if (currentStat.getValue().get(Constants.Stats.TYPE).equals(Constants.Stats.UNDEFINED)) {
                     //skip calculation of stat. (The stat will be present at the merged file as undefined)
                     continue;
@@ -328,7 +338,10 @@ public class MergerInstance {
                 } else if (statKey.equals(Constants.Stats.Keys.LINKED_TRIPLES)) {
                     combineCustomStat(currentStat, combinedStatsJson);
                 } else {
-                    combineDefaultStat(currentStat, combinedStatsJson);
+                    //used for "detailed" statistics mode
+                    //combineDefaultStat(currentStat, combinedStatsJson);
+                    //used for "light" statistics mode
+                    combineLightStat(currentStat, combinedStatsJson);
                 }
             }
         }
@@ -349,7 +362,8 @@ public class MergerInstance {
         String statValueB = null;
         String statTotal = null;
 
-        if (stat.get(Constants.Stats.VALUE_A) != null && stat.get(Constants.Stats.VALUE_B) != null && stat.get(Constants.Stats.VALUE_TOTAL) != null) {
+        if (stat.get(Constants.Stats.VALUE_A) != null && stat.get(Constants.Stats.VALUE_B) != null 
+                && stat.get(Constants.Stats.VALUE_TOTAL) != null) {
             statValueA = stat.get(Constants.Stats.VALUE_A).toString();
             statValueB = stat.get(Constants.Stats.VALUE_B).toString();
             statTotal = stat.get(Constants.Stats.VALUE_TOTAL).toString();
@@ -379,6 +393,119 @@ public class MergerInstance {
         }
 
         combinedStatsJson.put(currentStat.getKey(), combined);
+    }
+
+    private void combineLightStat(Entry<String, JSONObject> currentStat, JSONObject combinedStatsJson)
+            throws NumberFormatException {
+
+        //these stas cannot be calculated in distributed mode.
+        if(currentStat.getKey().equals("executionTime") 
+                || currentStat.getKey().equals("averageGain") 
+                ||currentStat.getKey().equals("maxGain")
+                ||currentStat.getKey().equals("averageConfidence")){
+
+            return;
+        }
+
+        JSONObject stat = currentStat.getValue();
+        String rootLabel = stat.get(LABEL).toString();
+        JSONArray array = (JSONArray) stat.get(Constants.Stats.ITEMS);
+        
+        if(array.size() > 1){
+            JSONObject combined = (JSONObject) combinedStatsJson.get(currentStat.getKey());
+            
+            JSONArray old = (JSONArray) combined.get(Constants.Stats.ITEMS);
+            JSONObject combJson1 = (JSONObject) old.get(0);
+            JSONObject combJson2 = (JSONObject) old.get(1);
+            
+            String label1 = combJson1.get(Constants.Stats.LABEL).toString();
+            String oldValue1 = combJson1.get(Constants.Stats.VALUE).toString();
+
+            String label2 = combJson2.get(Constants.Stats.LABEL).toString();
+            String oldValue2 = combJson2.get(Constants.Stats.VALUE).toString();
+
+            if (array.get(0) != null && array.get(1) != null) {
+                JSONObject json1 = (JSONObject) array.get(0);
+                String currentValue1 = json1.get(Constants.Stats.VALUE).toString();
+                JSONObject json2 = (JSONObject) array.get(1);
+                String currentValue2 = json2.get(Constants.Stats.VALUE).toString();
+
+                Integer valA = Integer.parseInt(currentValue1);
+                Integer oldValA = Integer.parseInt(oldValue1);
+
+                Integer cValA = oldValA + valA;
+                
+                Integer valB = Integer.parseInt(currentValue2);
+                Integer oldValB = Integer.parseInt(oldValue2);
+
+                Integer cValB = oldValB + valB;
+                
+                String updatedValue1 = cValA.toString();
+                String updatedValue2 = cValB.toString();
+
+                JSONObject up = createLightStat2(rootLabel, label1, label2, updatedValue1, updatedValue2);
+                
+                combinedStatsJson.put(currentStat.getKey(), up);
+
+            }
+        } else {
+
+            JSONObject combined = (JSONObject) combinedStatsJson.get(currentStat.getKey());
+            
+            JSONArray old = (JSONArray) combined.get(Constants.Stats.ITEMS);
+            JSONObject combJson = (JSONObject) old.get(0);
+            String label = combJson.get(Constants.Stats.LABEL).toString();
+            String oldValue = combJson.get(Constants.Stats.VALUE).toString();
+
+            if (array.get(0) != null) {
+                JSONObject json = (JSONObject) array.get(0);
+                String currentValue = json.get(Constants.Stats.VALUE).toString();
+
+                Integer valA = Integer.parseInt(currentValue);
+                Integer oldValA = Integer.parseInt(oldValue);
+
+                Integer cValA = oldValA + valA;
+                String updatedValue = cValA.toString();
+
+                combinedStatsJson.put(currentStat.getKey(), createLightStat1(rootLabel, label, updatedValue));
+
+            }
+        }
+    }
+
+    private JSONObject createLightStat1(String rootLabel, String label, String value) {
+        JSONObject json = new JSONObject();
+        json.put(TYPE, ABSOLUTE);
+        json.put(LABEL, rootLabel);
+        JSONArray  jsonArray = new JSONArray();
+
+        JSONObject item = new JSONObject();
+        item.put(LABEL, label);
+        item.put(VALUE, value);
+
+        jsonArray.add(item);
+        json.put(Constants.Stats.ITEMS, jsonArray);
+        return json;
+    }
+
+    private JSONObject createLightStat2(String rootLabel, String label1, String label2, String value1, String value2) {
+        JSONObject json = new JSONObject();
+        json.put(TYPE, ABSOLUTE);
+        json.put(LABEL, rootLabel);
+        JSONArray  jsonArray = new JSONArray();
+
+        JSONObject item1 = new JSONObject();
+        item1.put(LABEL, label1);
+        item1.put(VALUE, value1);
+
+        JSONObject item2 = new JSONObject();
+        item2.put(LABEL, label2);
+        item2.put(VALUE, value2);
+        
+        jsonArray.add(item1);
+        jsonArray.add(item2);
+        json.put(Constants.Stats.ITEMS, jsonArray);
+        return json;
     }
 
     private void combinePercentStat(Entry<String, JSONObject> currentStat, JSONObject combinedStatsJson)
